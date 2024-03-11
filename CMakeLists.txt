@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(more_interfaces)
 
+set(NODE_NAME more_node)
+
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
@@ -20,6 +22,7 @@ find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 set(msg_files
@@ -30,19 +33,18 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
 )
 
-ament_export_dependencies(rosidl_default_runtime)
+add_executable(${NODE_NAME} src/publish_address_book.cpp)
+ament_target_dependencies(${NODE_NAME} rclcpp)
 
-find_package(rclcpp REQUIRED)
-
-add_executable(publish_address_book src/publish_address_book.cpp)
-ament_target_dependencies(publish_address_book rclcpp)
+# rosidl과 rclcpp같이 사용할 경우
+# ament_target_dependencies 뒤에
+# rosidl_target_interfaces를 배치해야함
+rosidl_target_interfaces(${NODE_NAME}
+  ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 install(TARGETS
-  publish_address_book
+  ${NODE_NAME}
   DESTINATION lib/${PROJECT_NAME})
-
-rosidl_target_interfaces(publish_address_book
-  ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
